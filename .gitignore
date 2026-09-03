@@ -4,3 +4,6 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 .idea/
+
+# состояние Steam-аутентификации при локальном docker-запуске
+data/

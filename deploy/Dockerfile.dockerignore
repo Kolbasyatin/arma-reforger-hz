@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+.git/
+.idea/
+deploy/
+.github/
+*.md
+*.DotSettings.user

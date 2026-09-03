@@ -1,0 +1,22 @@
+# На сервере: лежит в /opt/arma-reforger-hz рядом с папкой data/.
+# Порт наружу не публикуется — сеть настроим вместе с telegram notifier.
+
+services:
+  service:
+    image: ghcr.io/kolbasyatin/arma-reforger-hz:latest
+    container_name: arma-reforger-hz
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+
+  # Интерактивный Steam-логин. Не стартует сам — только через steam-login.sh.
+  cli:
+    image: ghcr.io/kolbasyatin/arma-reforger-hz:latest
+    profiles: [tools]
+    entrypoint: ["dotnet", "cli/ArmaReforger.Cli.dll"]
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data
