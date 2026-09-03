@@ -33,6 +33,8 @@ public sealed class SteamCredentialsLogin
             _logger,
             cancellationToken);
 
+        _logger.LogInformation("Starting Steam auth session for {Username}", credentials.Username);
+
         var session = await connection.Authentication.BeginAuthSessionViaCredentialsAsync(
             new AuthSessionDetails
             {
@@ -44,6 +46,9 @@ public sealed class SteamCredentialsLogin
             });
 
         var result = await session.PollingWaitForResultAsync(cancellationToken);
+
+        // Граница этапов: до сюда падает Steam Guard/пароль, после — проверочный вход по refresh token.
+        _logger.LogInformation("Steam issued refresh token for {AccountName}", result.AccountName);
 
         var authState = new SteamAuthState(
             result.AccountName,

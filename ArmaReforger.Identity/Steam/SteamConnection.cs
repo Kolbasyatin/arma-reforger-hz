@@ -39,7 +39,7 @@ public sealed class SteamConnection : IAsyncDisposable
 
         _subscriptions.Add(
             _callbackManager.Subscribe<SteamClient.DisconnectedCallback>(
-                _ => OnDisconnected()));
+                callback => OnDisconnected(callback.UserInitiated)));
     }
 
     /// <summary>Аутентификация SteamKit: вход по логину/паролю и Steam Guard.</summary>
@@ -144,7 +144,7 @@ public sealed class SteamConnection : IAsyncDisposable
         }
     }
 
-    private void OnDisconnected()
+    private void OnDisconnected(bool userInitiated)
     {
         if (_closing)
         {
@@ -152,6 +152,13 @@ public sealed class SteamConnection : IAsyncDisposable
 
             return;
         }
+
+        // Разрыв не по нашей инициативе: Steam закрыл соединение сам или упала сеть.
+        // Ожидающие SteamKit-задания при этом падают AsyncJobFailedException без причины,
+        // поэтому единственное место, где причину видно, — эта строка.
+        _logger.LogWarning(
+            "Disconnected from Steam CM unexpectedly (userInitiated: {UserInitiated})",
+            userInitiated);
 
         var error = new SteamSessionException("Disconnected from Steam CM unexpectedly");
 

@@ -32,7 +32,8 @@ public sealed class FileSteamAuthStateStore : ISteamAuthStateStore
     {
         if (!File.Exists(_filePath))
         {
-            _logger.LogWarning("Steam auth state file not found at {FilePath}", _filePath);
+            // Для CLI это штатно (первый вход), для сервиса причину скажет воркер. Здесь только след.
+            _logger.LogDebug("Steam auth state file not found at {FilePath}", _filePath);
 
             return null;
         }

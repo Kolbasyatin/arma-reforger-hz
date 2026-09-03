@@ -9,6 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+SteamKitDebugListener.EnableIfRequested();
+
 using var loggerFactory = LoggerFactory.Create(logging => logging.AddSimpleConsole());
 
 // Тот же источник настроек, что у сервиса (Steam__AuthStateFilePath и т.д.),
@@ -59,7 +61,9 @@ try
 }
 catch (Exception exception)
 {
-    Console.Error.WriteLine($"Login failed: {exception.Message}");
+    // Целиком, а не Message: у SteamKit-исключений он бывает пустым, а тип и стек — единственная зацепка.
+    Console.Error.WriteLine("Login failed:");
+    Console.Error.WriteLine(exception);
 
     return 1;
 }

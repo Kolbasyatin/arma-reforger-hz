@@ -5,7 +5,6 @@ services:
   service:
     image: ghcr.io/kolbasyatin/arma-reforger-hz:latest
     container_name: arma-reforger-hz
-    restart: unless-stopped
     volumes:
       - ./data:/data
     environment:
