@@ -7,3 +7,6 @@ riderModule.iml
 
 # состояние Steam-аутентификации при локальном docker-запуске
 data/
+
+# секреты для .http-запросов (BI token, Steam ticket)
+http/http-client.private.env.json

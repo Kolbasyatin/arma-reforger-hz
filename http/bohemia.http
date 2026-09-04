@@ -1,0 +1,126 @@
+### Запросы к BI API и к нашему сервису. Формат JetBrains HTTP Client (Rider: открыть и нажать ▶).
+### Переменные — в http/http-client.env.json; секреты (biToken) — в http/http-client.private.env.json (gitignored).
+### Значения версий сняты с Arma Reforger 1.8.0.10; после патча игры проверить User-Agent и версии.
+
+### 0. Наш сервис: текущий BI access token. 404 — токена пока нет.
+GET http://{{tokenHost}}/token
+
+> {%
+    // Успешный ответ кладём в переменную, дальше запросы можно слать без ручной подстановки.
+    if (response.status === 200) {
+        client.global.set("biToken", response.body.accessToken);
+    }
+%}
+
+
+### 1. Поиск комнат: все серверы, отсортированные по числу игроков.
+### ascendent обязателен — без него backend отвечает InvalidInput.
+POST https://api-ar-game.bistudio.com/game-api/api/v1.0/lobby/rooms/search
+Content-Type: application/json
+User-Agent: Arma Reforger/1.8.0.10 (Client; Windows)
+
+{
+  "directJoinCode": "",
+  "hostAddress": "",
+  "order": "PlayerCount",
+  "scenarioId": "",
+  "includePing": 0,
+  "text": "",
+  "minPlayersPercent": 0,
+  "maxPlayersPercent": 100,
+  "minPlayersCount": 0,
+  "maxPlayersCount": 256,
+  "modded": false,
+  "ascendent": false,
+  "gameClientFilter": "AnyCompatible",
+  "accessToken": "{{biToken}}",
+  "clientVersion": "1.8.0",
+  "platformId": "ReforgerSteam",
+  "gameClientType": "PLATFORM_PC",
+  "lightweight": true,
+  "from": 0,
+  "limit": 50,
+  "pingValues": []
+}
+
+### 2. Поиск конкретного сервера по адресу — то, что будет делать мониторинг.
+### hostAddress в формате ip:port игрового порта (не A2S).
+POST https://api-ar-game.bistudio.com/game-api/api/v1.0/lobby/rooms/search
+Content-Type: application/json
+User-Agent: Arma Reforger/1.8.0.10 (Client; Windows)
+
+{
+  "directJoinCode": "",
+  "hostAddress": "{{hostAddress}}",
+  "order": "PlayerCount",
+  "scenarioId": "",
+  "includePing": 0,
+  "text": "",
+  "minPlayersPercent": 0,
+  "maxPlayersPercent": 100,
+  "minPlayersCount": 0,
+  "maxPlayersCount": 256,
+  "modded": false,
+  "ascendent": false,
+  "gameClientFilter": "AnyCompatible",
+  "accessToken": "{{biToken}}",
+  "clientVersion": "1.8.0",
+  "platformId": "ReforgerSteam",
+  "gameClientType": "PLATFORM_PC",
+  "lightweight": false,
+  "from": 0,
+  "limit": 1,
+  "pingValues": []
+}
+
+
+
+### 3. Поиск по имени сервера.
+POST https://api-ar-game.bistudio.com/game-api/api/v1.0/lobby/rooms/search
+Content-Type: application/json
+User-Agent: Arma Reforger/1.8.0.13 (Client; Windows)
+
+{
+  "order": "PlayerCount",
+  "text": "RUBEZH",
+
+  "ascendent": false,
+  "gameClientFilter": "AnyCompatible",
+  "accessToken": "{{biToken}}",
+  "clientVersion": "1.8.0",
+  "platformId": "ReforgerSteam",
+  "gameClientType": "PLATFORM_PC",
+  "lightweight": true,
+  "from": 0,
+  "limit": 20,
+  "pingValues": []
+}
+
+### 4. Game session login — то, что делает настоящий клиент после получения токена.
+### Для rooms/search, судя по перехвату, не требуется; запрос оставлен для A/B-проверки.
+POST https://api-ar-game.bistudio.com/game-api/api/v1.0/session/login
+Content-Type: application/json
+User-Agent: Arma Reforger/1.8.0.10 (Client; Windows)
+
+{
+  "accessToken": "{{biToken}}",
+  "clientVersion": "1.8.0",
+  "platformId": "ReforgerSteam",
+  "gameVersion": "1.8.0.10",
+  "platformUsername": "{{platformUsername}}"
+}
+
+### 5. Обмен Steam-билета на BI token — то, что делает сервис. Руками нужен только для отладки:
+### билет живёт до Dispose, взять его можно лишь из лога/отладчика сервиса.
+POST https://api-ar-id.bistudio.com/game-identity/api/v1.1/identities/reforger/auth?include=profile
+Content-Type: application/json
+User-Agent: Arma Reforger/1.8.0.10 (Client; Windows)
+
+{
+  "platform": "steam",
+  "token": "{{steamTicketBase64}}",
+  "platformOpts": {
+    "appId": "1874880"
+  }
+}
+

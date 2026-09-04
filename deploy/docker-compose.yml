@@ -1,5 +1,8 @@
 # На сервере: лежит в /opt/arma-reforger-hz рядом с папкой data/.
-# Порт наружу не публикуется — сеть настроим вместе с telegram notifier.
+# Порт наружу не публикуется. Потребитель (tsbot-monitor из репозитория teamspeakbot) ходит
+# на http://arma-reforger-hz:8080/token через общую внешнюю docker-сеть arma-shared:
+# её создаёт systemd-юнит в ExecStartPre (docker network create arma-shared), оба compose
+# подключают её как external, поэтому down любого из них сеть не сносит.
 
 services:
   service:
@@ -9,6 +12,9 @@ services:
       - ./data:/data
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - default
+      - arma
 
   # Интерактивный Steam-логин. Не стартует сам — только через steam-login.sh.
   cli:
@@ -19,3 +25,8 @@ services:
     tty: true
     volumes:
       - ./data:/data
+
+networks:
+  arma:
+    name: arma-shared
+    external: true

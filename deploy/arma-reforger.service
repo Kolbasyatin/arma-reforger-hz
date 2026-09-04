@@ -15,6 +15,8 @@ Wants=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/opt/arma-reforger-hz
+# Общая сеть с tsbot-monitor; «-» гасит ошибку «already exists», если её уже создал другой юнит.
+ExecStartPre=-/usr/bin/docker network create arma-shared
 ExecStartPre=/usr/bin/docker compose pull --quiet
 ExecStart=/usr/bin/docker compose up -d --remove-orphans
 ExecStop=/usr/bin/docker compose down
