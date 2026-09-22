@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# УСТАРЕЛО. Логин делается скриптом .docker/steam-login.sh в репозитории teamspeakbot.
 # Первый Steam-логин: логин, пароль, код Steam Guard -> data/steam-auth.json.
 # Запускать из папки с docker-compose.yml. Сервис останавливать не нужно —
 # он подхватит файл на следующей попытке (до 1 минуты).

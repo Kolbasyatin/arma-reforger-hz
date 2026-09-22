@@ -26,6 +26,10 @@ builder.Services
     .AddOptions<TokenRefreshOptions>()
     .Bind(builder.Configuration.GetSection(TokenRefreshOptions.SectionName));
 
+builder.Services
+    .AddOptions<SteamWebApiOptions>()
+    .Bind(builder.Configuration.GetSection(SteamWebApiOptions.SectionName));
+
 builder.Services.AddSingleton<IBiTokenStore, InMemoryBiTokenStore>();
 builder.Services.AddSingleton<ISteamAuthStateStore, FileSteamAuthStateStore>();
 builder.Services.AddSingleton<ISteamTicketProvider, SteamTicketProvider>();
@@ -39,6 +43,17 @@ builder.Services
 
         httpClient.BaseAddress = options.IdentityBaseAddress;
         httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(options.UserAgent);
+    });
+
+builder.Services
+    .AddHttpClient<ISteamProfileClient, SteamProfileClient>((serviceProvider, httpClient) =>
+    {
+        var options = serviceProvider
+            .GetRequiredService<Microsoft.Extensions.Options.IOptions<SteamWebApiOptions>>()
+            .Value;
+
+        httpClient.BaseAddress = options.BaseAddress;
+        httpClient.Timeout = options.Timeout;
     });
 
 builder.Services.AddHostedService<BiTokenRefreshWorker>();

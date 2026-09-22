@@ -1,3 +1,6 @@
+# УСТАРЕЛО. Сервис входит в стек teamspeak6 (репозиторий teamspeakbot, .docker/compose.prod.yaml).
+# Этот юнит оставлен до проверки объединённого стека на проде и должен быть выключен:
+#   sudo systemctl disable --now arma-reforger
 # /etc/systemd/system/arma-reforger.service
 #
 # sudo systemctl daemon-reload

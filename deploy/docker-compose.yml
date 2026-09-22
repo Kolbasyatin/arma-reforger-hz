@@ -1,3 +1,7 @@
+# УСТАРЕЛО. Деплой объединён с teamspeakbot: сервис описан там как bohemia-token
+# в .docker/compose.prod.yaml и запускается юнитом teamspeak6. Этот файл оставлен до проверки
+# объединённого стека на проде; одновременно с ним запускать нельзя — оба стека займут
+# одно имя контейнера arma-reforger-hz.
 # На сервере: лежит в /opt/arma-reforger-hz рядом с папкой data/.
 # Порт наружу не публикуется. Потребитель (tsbot-monitor из репозитория teamspeakbot) ходит
 # на http://arma-reforger-hz:8080/token через общую внешнюю docker-сеть arma-shared:
@@ -5,7 +9,7 @@
 # подключают её как external, поэтому down любого из них сеть не сносит.
 
 services:
-  service:
+  token-service:
     image: ghcr.io/kolbasyatin/arma-reforger-hz:latest
     container_name: arma-reforger-hz
     volumes:
@@ -17,7 +21,7 @@ services:
       - arma
 
   # Интерактивный Steam-логин. Не стартует сам — только через steam-login.sh.
-  cli:
+  token-cli:
     image: ghcr.io/kolbasyatin/arma-reforger-hz:latest
     profiles: [tools]
     entrypoint: ["dotnet", "cli/ArmaReforger.Cli.dll"]

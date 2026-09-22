@@ -112,49 +112,21 @@ docker run --rm -it -v ./data:/data --entrypoint dotnet arma-reforger-hz cli/Arm
 
 ## Деплой
 
-Схема: GitHub Actions собирает образ и публикует в `ghcr.io/kolbasyatin/arma-reforger-hz` при push в `master` (теги `latest` и `sha-<коммит>`). Сервер тянет образ и запускает через systemd.
+Здесь только сборка образа: GitHub Actions публикует `ghcr.io/kolbasyatin/arma-reforger-hz` при push в `master` (теги `latest` и `sha-<коммит>`).
 
-### Сервер, первый раз
+Запуск описан **не здесь**. Сервис входит в общий прод-стек репозитория `teamspeakbot` — сервис `bohemia-token` в `.docker/compose.prod.yaml`, юнит `teamspeak6`, каталог на машине `/opt/teamspeakbot/.docker`. Там же логин в Steam (`steam-login.sh`) и состояние (`arma-token-data/`). Подробности — в `.docker/README.md` того репозитория, раздел «Сервис токенов Bohemia».
 
-```bash
-sudo mkdir -p /opt/arma-reforger-hz && cd /opt/arma-reforger-hz
-sudo cp deploy/docker-compose.yml deploy/steam-login.sh .
+Раньше сервис деплоился отдельно: свой compose в `/opt/arma-reforger-hz`, юнит `arma-reforger`, общая docker-сеть `arma-shared`. Файлы `deploy/docker-compose.yml`, `deploy/arma-reforger.service` и `deploy/steam-login.sh` остались от той схемы и больше не используются — их можно удалить, когда объединённый стек проверен на проде. Держать оба одновременно нельзя: они дерутся за имя контейнера `arma-reforger-hz`.
 
-# если пакет в GHCR приватный:
-docker login ghcr.io   # PAT с правом read:packages
-
-sudo cp deploy/arma-reforger.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now arma-reforger
-
-./steam-login.sh       # логин, пароль, код -> data/steam-auth.json
-```
-
-Сервис подхватит файл в течение минуты. Проверка:
+Обновление образа на проде:
 
 ```bash
-docker logs -f arma-reforger-hz
+cd /opt/teamspeakbot/.docker
+docker compose --env-file env/secrets.env -f compose.prod.yaml pull
+sudo systemctl restart teamspeak6
 ```
 
-### Обновление
-
-```bash
-sudo systemctl restart arma-reforger    # pull делается на старте
-```
-
-Откат на конкретный коммит — поменять тег в `docker-compose.yml` с `latest` на `sha-xxxxxxx` и перезапустить.
-
-### Повторный логин
-
-Нужен, если Steam отозвал refresh token (в логе `Steam logon failed`) или устройство отозвано в настройках аккаунта Steam. Сервис останавливать не нужно:
-
-```bash
-cd /opt/arma-reforger-hz && ./steam-login.sh
-```
-
-### Сеть
-
-Порт наружу в `docker-compose.yml` не публикуется. Интеграция с telegram notifier (общая docker-сеть или проброс порта) настраивается отдельно.
+Откат на конкретный коммит — поменять тег в `compose.prod.yaml` с `latest` на `sha-xxxxxxx` и перезапустить.
 
 ## Секреты
 

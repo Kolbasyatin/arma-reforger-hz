@@ -7,9 +7,6 @@ namespace ArmaReforger.Identity.Bohemia;
 
 public sealed class BiIdentityClient : IBiIdentityClient
 {
-    private const string AuthPath =
-        "game-identity/api/v1.1/identities/reforger/auth?include=profile";
-
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -17,15 +14,18 @@ public sealed class BiIdentityClient : IBiIdentityClient
 
     private readonly HttpClient _httpClient;
     private readonly SteamOptions _steamOptions;
+    private readonly BohemiaOptions _bohemiaOptions;
     private readonly ILogger<BiIdentityClient> _logger;
 
     public BiIdentityClient(
         HttpClient httpClient,
         IOptions<SteamOptions> steamOptions,
+        IOptions<BohemiaOptions> bohemiaOptions,
         ILogger<BiIdentityClient> logger)
     {
         _httpClient = httpClient;
         _steamOptions = steamOptions.Value;
+        _bohemiaOptions = bohemiaOptions.Value;
         _logger = logger;
     }
 
@@ -44,7 +44,7 @@ public sealed class BiIdentityClient : IBiIdentityClient
         };
 
         using var response = await _httpClient.PostAsJsonAsync(
-            AuthPath,
+            _bohemiaOptions.AuthPath,
             request,
             cancellationToken);
 
